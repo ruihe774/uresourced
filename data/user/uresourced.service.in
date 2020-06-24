@@ -1,0 +1,18 @@
+[Unit]
+Description=User resource assignment daemon
+
+Before=graphical-session.target
+PartOf=graphical-session.target
+
+[Service]
+# This daemon needs to be in the root slice so that the system daemon can
+# detect it easily by checking whether the cgroup path exists.
+Slice=-.slice
+
+Type=notify
+ExecStart=@libexecdir@/uresourced --user
+TimeoutStopSec=5s
+
+
+ProtectSystem=strict
+RestrictAddressFamilies=AF_UNIX

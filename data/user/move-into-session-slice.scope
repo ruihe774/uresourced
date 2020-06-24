@@ -1,0 +1,4 @@
+[Scope]
+Slice=app.slice
+# Disable memory controller
+DisableControllers=memory

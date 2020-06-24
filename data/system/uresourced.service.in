@@ -1,0 +1,20 @@
+[Unit]
+Description=User resource assignment daemon
+
+Before=user@.service
+
+[Service]
+Type=notify
+ExecStart=@libexecdir@/uresourced
+
+ProtectSystem=strict
+
+# The daemon writes drop-in configurations for the user systemd instance
+ReadWritePaths=/run/systemd
+ReadOnlyPaths=/sys/fs/cgroup
+
+# We only need DBus access
+RestrictAddressFamilies=AF_UNIX
+
+[Install]
+WantedBy=user@.service

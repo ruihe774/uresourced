@@ -1,0 +1,4 @@
+[Service]
+Slice=session.slice
+# Disable memory controller
+DisableControllers=memory
