@@ -15,6 +15,8 @@ meson.add_install_script(
 )
 
 user_drop_ins = [
+  ['session.slice', 'session.slice'],
+
   # Move important services into session slice
   ['at-spi-dbus-bus.service', 'move-into-session-slice.service'],
   ['dbus-broker.service', 'move-into-session-slice.service'],
