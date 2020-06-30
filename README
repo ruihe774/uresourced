@@ -1,0 +1,32 @@
+UResourced
+==========
+
+NOTE: This daemon is designed for obsoletion. The codebase is not supposed to
+be pretty, it just needs to do the one job until other components are able
+to take over in the long run.
+
+
+This daemon will give resource allocations to active graphical users. Which is
+done by adjusting some user-X.slice and user@X.service resource allocation
+systemd properties on the fly.
+
+One thing this does is giving the active user an overall higher priority
+in comparison with other users (inactive or remote ssh sessions).
+
+But, more importantly, the user gets a memory protection assigned to them. In
+accordance with https://systemd.io/DESKTOP_ENVIRONMENTS/ this resource
+allocation will be distributed towards the user's session.slice.
+
+To achieve this, the daemon does the following:
+ * Install drop-in configurations for user services
+   (may be desktop environment specific, and are meant as a band-aid until
+    adopted upstream).
+ * Runtime generated drop-in to mirror allocation assignments inside the user
+   scope.
+
+Due to how this works, the user systemd instance may need to be restarted
+(or reloaded) after a configuration change. Theoretically a SIGHUP send to
+each user instance would be sufficient, the daemon only ensures it is started
+prior using systemd synchronisation mechanisms.
+If you want to make sure it is correctly applied, and do not know how to check,
+then please do a reboot after installing and enabling the service.
