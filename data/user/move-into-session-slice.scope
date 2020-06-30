@@ -1,4 +1,4 @@
 [Scope]
-Slice=app.slice
+Slice=session.slice
 # Disable memory controller
 DisableControllers=memory
