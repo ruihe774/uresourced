@@ -32,9 +32,6 @@ user_drop_ins = [
   # flatpak is already fixed upstream (as of 2020-06)
   ['flatpak-.scope', 'move-into-app-slice.scope'],
 
-  # gnome-terminal-server is already fixed upstream (as of 2020-06)
-  ['gnome-terminal-server.scope', 'move-into-app-slice.scope'],
-
   # The following likely still need upstream changes (as of 2020-06)
   ['dbus-.service', 'move-into-app-slice.service'],
   ['evolution-.service', 'move-into-app-slice.service'],
