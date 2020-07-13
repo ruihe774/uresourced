@@ -75,6 +75,8 @@ set_unit_resources (RManager    *self,
                     RAllocation *allocation)
 {
   GVariantBuilder builder = G_VARIANT_BUILDER_INIT (G_VARIANT_TYPE ("(sba(sv))"));
+  g_autofree char *cpu_weight = NULL;
+  g_autofree char *io_weight = NULL;
 
   g_variant_builder_add (&builder, "s", unit);
   g_variant_builder_add (&builder, "b", FALSE);
@@ -88,13 +90,32 @@ set_unit_resources (RManager    *self,
 
   g_variant_builder_add (&builder, "(sv)", "MemoryLow", g_variant_new_uint64 (allocation->memory_low));
   if (allocation->cpu_weight != WEIGHT_IGNORE)
-    g_variant_builder_add (&builder, "(sv)", "CPUWeight", g_variant_new_uint64 (allocation->cpu_weight));
+    {
+      g_variant_builder_add (&builder, "(sv)", "CPUWeight", g_variant_new_uint64 (allocation->cpu_weight));
+      cpu_weight = g_strdup_printf ("%d", allocation->cpu_weight);
+    }
+  else
+    {
+      cpu_weight = g_strdup ("-");
+    }
   if (allocation->io_weight != WEIGHT_IGNORE)
-    g_variant_builder_add (&builder, "(sv)", "IOWeight", g_variant_new_uint64 (allocation->io_weight));
+    {
+      g_variant_builder_add (&builder, "(sv)", "IOWeight", g_variant_new_uint64 (allocation->io_weight));
+      io_weight = g_strdup_printf ("%d", allocation->cpu_weight);
+    }
+  else
+    {
+      io_weight = g_strdup ("-");
+    }
+
 
   g_variant_builder_close (&builder);
 
-  g_debug ("Setting resources on %s (MemoryLow: %" G_GUINT64_FORMAT ")", unit, allocation->memory_low);
+  g_message ("Setting resources on %s (MemoryLow: %" G_GUINT64_FORMAT ", CPUWeight: %s, IOWeight: %s)",
+             unit,
+             allocation->memory_low,
+             cpu_weight,
+             io_weight);
   g_dbus_connection_call (self->connection,
                           "org.freedesktop.systemd1",
                           "/org/freedesktop/systemd1",
