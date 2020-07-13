@@ -116,7 +116,7 @@ logind_quiet (gpointer user_data)
           if (r < 0)
             {
               /* This can happen after sessions disappear (i.e. not just a transient issue). */
-              g_warning ("Failed to get user for session %s, ignoring the session: %m", *session);
+              g_debug ("Failed to get user for session %s, ignoring the session: %m", *session);
               continue;
             }
 
