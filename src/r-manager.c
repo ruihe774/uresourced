@@ -82,12 +82,6 @@ set_unit_resources (RManager    *self,
   g_variant_builder_add (&builder, "b", FALSE);
   g_variant_builder_open (&builder, G_VARIANT_TYPE ("a(sv)"));
 
-#if 0
-  g_variant_builder_add (&builder, "(sv)", "Delegate", g_variant_new_strv (NULL, 0));
-  if (!reset)
-    g_variant_builder_add (&builder, "(sv)", "Delegate", g_variant_new_strv ((const char* const*) self->controllers, -1));
-#endif
-
   g_variant_builder_add (&builder, "(sv)", "MemoryLow", g_variant_new_uint64 (allocation->memory_low));
   if (allocation->cpu_weight != WEIGHT_IGNORE)
     {
