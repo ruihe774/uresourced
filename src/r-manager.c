@@ -240,6 +240,7 @@ r_manager_finalize (GObject *object)
 {
   RManager *self = (RManager *)object;
 
+  g_clear_object (&self->connection);
   g_clear_object (&self->login);
   g_clear_pointer (&self->all_users, g_array_unref);
   g_clear_pointer (&self->graphical_users, g_array_unref);
