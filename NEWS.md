@@ -1,3 +1,12 @@
+Version 0.2.0
+-------------
+
+Changes:
+
+ * Enable CPU/IO controllers for applications
+ * Slightly improved logging
+ * Fix a few minor memory leaks
+
 Version 0.1.0
 -------------
 
