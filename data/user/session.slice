@@ -2,4 +2,5 @@
 # Disable the memory controller so that session.slice applications all receive
 # the MemoryLow protection as one entity (rather than it needing to be
 # distributed in ways that we cannot predict).
+# See also https://github.com/systemd/systemd/pull/16559
 DisableControllers=memory
