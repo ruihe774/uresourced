@@ -25,6 +25,9 @@ user_drop_ins = [
   ['gvfs-.service', 'move-into-session-slice.service'],
   ['pipewire.service', 'move-into-session-slice.service'],
   ['pulseaudio.service', 'move-into-session-slice.service'],
+  # Move selected core applications into session.slice (useful for recovery)
+  ['gnome-launched-gnome-system-monitor.desktop-.scope', 'move-into-session-slice.scope'],
+  ['gnome-launched-org.gnome.Usage.desktop-.scope', 'move-into-session-slice.scope'],
 
   # Move things into app.slice
   ['gnome-launched-.scope', 'move-into-app-slice.scope'],
