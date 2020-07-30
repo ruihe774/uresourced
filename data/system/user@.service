@@ -1,2 +1,5 @@
+[Unit]
+After=uresourced.service
+
 [Service]
 Delegate=cpu io memory
