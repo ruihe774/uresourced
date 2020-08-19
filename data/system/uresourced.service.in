@@ -1,8 +1,6 @@
 [Unit]
 Description=User resource assignment daemon
 
-Before=user@.service
-
 [Service]
 Type=notify
 ExecStart=@libexecdir@/uresourced
