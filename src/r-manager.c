@@ -416,9 +416,9 @@ write_session_user_drop_ins (RManager *self)
     "%sCPUWeight=%i\n"
     "%sIOWeight=%i\n",
     self->session_slice.memory_low,
-    self->session_slice.cpu_weight == WEIGHT_IGNORE ? "%" : "",
+    self->session_slice.cpu_weight == WEIGHT_IGNORE ? "#" : "",
     self->session_slice.cpu_weight,
-    self->session_slice.io_weight == WEIGHT_IGNORE ? "%" : "",
+    self->session_slice.io_weight == WEIGHT_IGNORE ? "#" : "",
     self->session_slice.io_weight
   );
 
