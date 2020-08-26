@@ -9,4 +9,5 @@
 # See also
 #  https://github.com/systemd/systemd/pull/16559
 #  https://github.com/systemd/systemd/issues/16840
+DefaultMemoryMin=1G
 DefaultMemoryLow=1G
