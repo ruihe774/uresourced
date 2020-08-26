@@ -26,6 +26,12 @@ systemd_dep = dependency('systemd')
 systemd_userunitdir = systemd_dep.get_pkgconfig_variable('systemduserunitdir')
 systemd_systemunitdir = systemd_dep.get_pkgconfig_variable('systemdsystemunitdir')
 
+# Detect whether we have memory_recursiveprot
+if systemd_dep.version().version_compare('>=247')
+  systemd_uses_recursiveprot=true
+else
+  systemd_uses_recursiveprot=false
+endif
 
 subdir('data')
 subdir('src')

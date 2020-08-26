@@ -14,9 +14,15 @@ meson.add_install_script(
     'uresourced.service'
 )
 
-user_drop_ins = [
-  ['session.slice', 'session.slice'],
+user_drop_ins = []
 
+if not systemd_uses_recursiveprot
+  user_drop_ins += [
+    ['session.slice', 'session.slice'],
+  ]
+endif
+
+user_drop_ins += [
   # Move important services into session slice
   ['at-spi-dbus-bus.service', 'move-into-session-slice.service'],
   ['dbus-broker.service', 'move-into-session-slice.service'],
