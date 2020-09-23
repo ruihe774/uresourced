@@ -8,6 +8,7 @@ project('uresourced', 'c',
 
 prefix = get_option('prefix')
 sysconfdir = join_paths(prefix, get_option('sysconfdir'))
+datadir = join_paths(prefix, get_option('datadir'))
 
 config_h = configuration_data()
 config_h.set_quoted('PACKAGE_VERSION', meson.project_version())
@@ -21,6 +22,8 @@ add_project_arguments([
 ], language: 'c')
 
 libexecdir = join_paths(get_option('prefix'), get_option('libexecdir'))
+
+gnome  = import('gnome')
 
 systemd_dep = dependency('systemd')
 systemd_userunitdir = systemd_dep.get_pkgconfig_variable('systemduserunitdir')

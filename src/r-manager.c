@@ -24,6 +24,8 @@ struct _RManager
 
   gint pending_calls;
   GDBusConnection *connection;
+  guint bus_name;
+  guint dbus_obj;
   RSdLogin *login;
 
   /* Configuration */
@@ -178,11 +180,13 @@ set_user_resources (RManager *self, uid_t uid, gboolean active)
 }
 
 static void
-active_users_changed_cb (RManager *self)
+updat_user_allocations (RManager *self, gboolean force_active)
 {
   GArray *all_users;
   GArray *graphical_users;
   guint i;
+
+  g_debug ("Updating user resource allocations");
 
   /* Users are "graphical" if they have at least one active graphical session. */
   r_sd_login_get_users (self->login, &all_users, &graphical_users);
@@ -214,12 +218,12 @@ active_users_changed_cb (RManager *self)
         set_user_resources (self, uid, FALSE);
     }
 
-  /* Now assign resources to any new/unknown graphical user. */
+  /* Now assign resources to active graphical user. */
   for (i = 0; i < graphical_users->len; i++)
     {
       uid_t uid = g_array_index (graphical_users, uid_t, i);
 
-      if (!g_array_binary_search (self->graphical_users, &uid, uid_cmp, NULL))
+      if (force_active || !g_array_binary_search (self->graphical_users, &uid, uid_cmp, NULL))
         set_user_resources (self, uid, TRUE);
     }
 
@@ -233,6 +237,12 @@ active_users_changed_cb (RManager *self)
 
   g_clear_pointer (&self->all_users, g_array_unref);
   self->all_users = g_array_copy (all_users);
+}
+
+static void
+active_users_changed_cb (RManager *self)
+{
+  updat_user_allocations (self, FALSE);
 }
 
 RManager *
@@ -263,18 +273,21 @@ r_manager_class_init (RManagerClass *klass)
   GObjectClass *object_class = G_OBJECT_CLASS (klass);
 
   object_class->finalize = r_manager_finalize;
+
+  g_signal_new ("quit",
+                R_TYPE_MANAGER, G_SIGNAL_RUN_LAST,
+                0,
+                NULL, NULL,
+                NULL,
+                G_TYPE_NONE, 0);
 }
 
 static void
 r_manager_init (RManager *self)
 {
-  GError *error = NULL;
-
   self->pending_calls = 0;
   self->graphical_users = g_array_new (FALSE, FALSE, sizeof(uid_t));
   self->all_users = g_array_new (FALSE, FALSE, sizeof(uid_t));
-
-  self->connection = g_bus_get_sync (G_BUS_TYPE_SYSTEM, NULL, &error);
 
   /* Neutral/no-protection values. */
   self->active_user.io_weight = WEIGHT_IGNORE;
@@ -285,9 +298,6 @@ r_manager_init (RManager *self)
 
   self->session_slice.io_weight = WEIGHT_IGNORE;
   self->session_slice.cpu_weight = WEIGHT_IGNORE;
-
-  if (!self->connection)
-    g_error ("Could not connect to system bus: %s", error->message);
 
   /* Get the amount of available RAM (we assume this never changes after start) */
   self->available_ram = get_available_ram ();
@@ -454,21 +464,127 @@ write_session_user_drop_ins (RManager *self)
     g_warning ("Could not write /run/systemd/user/session.slice.d/99-uresourced.conf: %s", error->message);
 }
 
+static void
+decrease_pending_calls (RManager *self)
+{
+  self->pending_calls -= 1;
+}
+
+static void
+handle_dbus_method_call (GDBusConnection       *connection G_GNUC_UNUSED,
+                         const char            *sender G_GNUC_UNUSED,
+                         const char            *object_path G_GNUC_UNUSED,
+                         const char            *interface_name G_GNUC_UNUSED,
+                         const char            *method_name G_GNUC_UNUSED,
+                         GVariant              *parameters G_GNUC_UNUSED,
+                         GDBusMethodInvocation *invocation,
+                         gpointer               user_data)
+{
+  RManager *manager = R_MANAGER (user_data);
+
+  /* Just trust that GDBus already ensures the correct method calls and types. */
+  updat_user_allocations (manager, TRUE);
+
+  g_dbus_method_invocation_return_value (invocation,
+                                         NULL);
+}
+
+static const GDBusInterfaceVTable interface_vtable = {
+  .method_call = handle_dbus_method_call,
+  .get_property = NULL,
+  .set_property = NULL,
+};
+
+static void
+bus_acquired_cb (GDBusConnection *connection,
+                 const gchar     *name G_GNUC_UNUSED,
+                 gpointer         user_data)
+{
+  g_autoptr(GError) error = NULL;
+  g_autoptr(GBytes) bytes = NULL;
+  g_autoptr(GDBusNodeInfo) introspection_data = NULL;
+  RManager *manager = R_MANAGER (user_data);
+
+  g_debug ("bus acquired");
+  manager->connection = g_object_ref (connection);
+
+  bytes = g_resources_lookup_data ("/uresourced/org.freedesktop.UResourced.xml",
+                                   G_RESOURCE_LOOKUP_FLAGS_NONE,
+                                   NULL);
+  introspection_data = g_dbus_node_info_new_for_xml (g_bytes_get_data (bytes, NULL), NULL);
+  g_assert (introspection_data);
+
+  /* Export object on bus. */
+  manager->pending_calls += 1;
+  manager->dbus_obj = g_dbus_connection_register_object (connection,
+                                                         "/org/freedesktop/UResourced",
+                                                         introspection_data->interfaces[0],
+                                                         &interface_vtable,
+                                                         manager,
+                                                         (GDestroyNotify) decrease_pending_calls,
+                                                         &error);
+
+  if (!manager->dbus_obj)
+    {
+      manager->pending_calls -= 1;
+      g_warning ("Failed to register object: %s", error->message);
+      g_clear_handle_id (&manager->bus_name, g_bus_unown_name);
+
+      g_signal_emit_by_name (manager, "quit");
+    }
+
+  /* We wait until we have the name to do anything else. */
+}
+
+static void
+name_acquired_cb (GDBusConnection *connection G_GNUC_UNUSED,
+                  const gchar     *name G_GNUC_UNUSED,
+                  gpointer         user_data)
+{
+  RManager *manager = R_MANAGER (user_data);
+  g_debug ("name acquired");
+
+  /* At this point it is safe to connect signals and such. */
+  g_signal_connect_object (manager->login,
+                           "changed",
+                           G_CALLBACK (active_users_changed_cb),
+                           manager,
+                           G_CONNECT_SWAPPED);
+  active_users_changed_cb (manager);
+}
+
+static void
+name_lost_cb (GDBusConnection *connection G_GNUC_UNUSED,
+              const gchar     *name G_GNUC_UNUSED,
+              gpointer         user_data)
+{
+  RManager *manager = R_MANAGER (user_data);
+  g_debug ("name lost; shutting down...");
+
+  g_signal_emit_by_name (manager, "quit");
+}
+
 void
 r_manager_start (RManager *self)
 {
   self->login = r_sd_login_new ();
-  g_signal_connect_object (self->login,
-                           "changed",
-                           G_CALLBACK (active_users_changed_cb),
-                           self,
-                           G_CONNECT_SWAPPED);
+  g_assert (self->login);
 
   read_config (self);
 
   write_session_user_drop_ins (self);
 
-  active_users_changed_cb (self);
+  /* Consider the existance of the bus name a "pending call" that we need to
+   * wait for to finish. */
+  self->pending_calls += 1;
+  self->bus_name = g_bus_own_name (G_BUS_TYPE_SYSTEM,
+                                   "org.freedesktop.UResourced",
+                                   G_BUS_NAME_OWNER_FLAGS_NONE,
+                                   bus_acquired_cb,
+                                   name_acquired_cb,
+                                   name_lost_cb,
+                                   self,
+                                   (GDestroyNotify) decrease_pending_calls);
 }
 
 void
@@ -486,6 +602,14 @@ r_manager_stop (RManager *self)
   g_array_set_size (self->all_users, 0);
 
   g_clear_object (&self->login);
+
+  if (self->dbus_obj)
+    {
+      g_dbus_connection_unregister_object (self->connection, self->dbus_obj);
+      self->dbus_obj = 0;
+    }
+  g_clear_handle_id (&self->bus_name, g_bus_unown_name);
+  g_clear_object (&self->connection);
 }
 
 void

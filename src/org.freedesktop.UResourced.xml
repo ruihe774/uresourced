@@ -1,0 +1,32 @@
+<!DOCTYPE node PUBLIC
+"-//freedesktop//DTD D-BUS Object Introspection 1.0//EN"
+"http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
+<node name="/" xmlns:doc="http://www.freedesktop.org/dbus/1.0/doc.dtd">
+
+  <interface name="org.freedesktop.UResourced">
+
+    <doc:doc>
+      <doc:description>
+        <doc:para>
+          UResourced DBus interface. This is not a public API!
+        </doc:para>
+      </doc:description>
+    </doc:doc>
+
+    <!-- methods -->
+
+    <method name="Update">
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            Update the user allocations. Called by session uresourced to signal
+            that it has started and resource allocation may need to be
+            refreshed.
+          </doc:para>
+        </doc:description>
+      </doc:doc>
+    </method>
+
+  </interface>
+
+</node>

@@ -6,6 +6,7 @@
 
 #include <glib.h>
 #include <glib-unix.h>
+#include <gio/gio.h>
 #include <stdlib.h>
 
 static gboolean
@@ -13,9 +14,46 @@ quit_mainloop (GMainLoop *loop)
 {
   g_debug ("Exiting mainloop");
 
-  g_main_loop_quit (loop);
+  if (g_main_loop_is_running (loop))
+    g_main_loop_quit (loop);
 
   return G_SOURCE_CONTINUE;
+}
+
+static gboolean
+idle_system_daemon_update (gpointer user_data G_GNUC_UNUSED)
+{
+  g_autoptr(GError) error = NULL;
+  g_autoptr(GDBusConnection) bus = NULL;
+  g_autoptr(GVariant) res = NULL;
+
+  /* The daemon is idle anyway, no need to bother with async routines. */
+  bus = g_bus_get_sync (G_BUS_TYPE_SYSTEM, NULL, &error);
+  if (!bus)
+    {
+      g_warning ("Could not get system bus: %s", error->message);
+      return G_SOURCE_REMOVE;
+    }
+
+  res = g_dbus_connection_call_sync (bus,
+                                     "org.freedesktop.UResourced",
+                                     "/org/freedesktop/UResourced",
+                                     "org.freedesktop.UResourced",
+                                     "Update",
+                                     NULL,
+                                     NULL,
+                                     G_DBUS_CALL_FLAGS_NO_AUTO_START,
+                                     1000,
+                                     NULL,
+                                     &error);
+
+  if (!res)
+    {
+      g_warning ("Could not call system daemon update routine: %s", error->message);
+      return G_SOURCE_REMOVE;
+    }
+
+  return G_SOURCE_REMOVE;
 }
 
 gint
@@ -59,18 +97,23 @@ main (gint   argc,
                      G_SOURCE_FUNC (quit_mainloop),
                      loop);
 
-  /* In user session mode the daemon does ... nothing. It currently only exists
-   * to have a defined cgroup that can be detected by the system daemon.
-   * Possible further uses are:
-   * - Signal system daemon to avoid race conditions (i.e. slow session startup)
-   * - Reload user daemon after system daemon restart
+  /* In user session mode the daemon currently only signals to the system
+   * daemon that it is running. This resolves a race condition where the
+   * cgroup of the user daemon was not yet active when the user became active
+   * after login.
    */
 
   if (!user_mode)
     {
       manager = r_manager_new ();
+      g_signal_connect_swapped (manager, "quit", G_CALLBACK (quit_mainloop), loop);
 
       r_manager_start (manager);
+    }
+  else
+    {
+      /* Register an idle handler to poke the system daemon. */
+      g_idle_add (idle_system_daemon_update, NULL);
     }
 
   sd_notify (0, "READY=1");

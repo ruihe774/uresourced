@@ -1,8 +1,17 @@
+resources_sources = gnome.compile_resources(
+  'uresourced-resources',
+  'uresourced.gresource.xml',
+  export: true,
+  source_dir: '.',
+  c_name: 'uresourced',
+)
+
 uresourced_sources = [
   'main.c',
   'r-manager.c',
   'r-sd-login.c',
   'utils.c',
+  resources_sources
 ]
 
 uresourced_deps = [

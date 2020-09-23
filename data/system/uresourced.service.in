@@ -2,7 +2,8 @@
 Description=User resource assignment daemon
 
 [Service]
-Type=notify
+Type=dbus
+BusName=org.freedesktop.UResourced
 ExecStart=@libexecdir@/uresourced
 
 ProtectSystem=strict
