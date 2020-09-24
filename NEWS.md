@@ -1,3 +1,13 @@
+Version 0.3.0
+-------------
+
+Changes:
+
+ * Use MemoryMin= to also give protection in OOM scenarios
+ * Fix a race condition during login that can break memory protection
+ * Change workaround for the lack of memory_recuriveprot
+ * Only install memory_recuriveprot workaround if systemd is too old
+
 Version 0.2.0
 -------------
 
