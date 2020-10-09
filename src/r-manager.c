@@ -396,7 +396,7 @@ read_config (RManager *self)
   check_clear_error (&error, "Global", "MaxMemoryMin");
   self->max_users_memory_low = config_get_memory (self, file, "Global", "MaxMemoryLow", &error);
   check_clear_error (&error, "Global", "MaxMemoryLow");
-  if (self->max_users_memory_low == 0 && self->max_users_memory_min)
+  if (self->max_users_memory_low == 0 && self->max_users_memory_min == 0)
     g_warning ("No memory allocation set or available for user.slice; the daemon will not do anything useful!");
 
   /* Dynamic ActiveUser allocation */
