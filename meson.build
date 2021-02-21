@@ -26,8 +26,19 @@ libexecdir = join_paths(get_option('prefix'), get_option('libexecdir'))
 gnome  = import('gnome')
 
 systemd_dep = dependency('systemd')
-systemd_userunitdir = systemd_dep.get_pkgconfig_variable('systemduserunitdir')
-systemd_systemunitdir = systemd_dep.get_pkgconfig_variable('systemdsystemunitdir')
+
+if get_option('systemdsystemunitdir') != ''
+  systemd_systemunitdir = get_option('systemdsystemunitdir')
+else
+  systemd_systemunitdir = systemd_dep.get_pkgconfig_variable('systemdsystemunitdir')
+endif
+
+if get_option('systemduserunitdir') != ''
+  systemd_userunitdir = get_option('systemduserunitdir')
+else
+  systemd_userunitdir = systemd_dep.get_pkgconfig_variable('systemduserunitdir',
+                                                           define_variable: ['prefix', get_option('prefix')])
+endif
 
 # Detect whether we have memory_recursiveprot
 if systemd_dep.version().version_compare('>=247')
