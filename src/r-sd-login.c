@@ -33,9 +33,8 @@ r_sd_login_finalize (GObject *object)
 {
   RSdLogin *self = (RSdLogin *) object;
 
-  g_source_remove (self->mon_source);
-  self->mon_source = 0;
   g_clear_handle_id (&self->mon_delay, g_source_remove);
+  g_clear_handle_id (&self->mon_source, g_source_remove);
   g_clear_pointer (&self->mon, sd_login_monitor_unref);
   g_clear_pointer (&self->graphical_users, g_array_unref);
   g_clear_pointer (&self->all_users, g_array_unref);
@@ -180,8 +179,7 @@ logind_changed (G_GNUC_UNUSED gint         fd,
   sd_login_monitor_flush (self->mon);
 
   /* Consider everything quiet/settled after 100ms */
-  if (self->mon_delay)
-    g_source_remove (self->mon_delay);
+  g_clear_handle_id (&self->mon_delay, g_source_remove);
   self->mon_delay = g_timeout_add (100, logind_quiet, self);
 
   return G_SOURCE_CONTINUE;
