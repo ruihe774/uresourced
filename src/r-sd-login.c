@@ -35,6 +35,7 @@ r_sd_login_finalize (GObject *object)
 
   g_source_remove (self->mon_source);
   self->mon_source = 0;
+  g_clear_handle_id (&self->mon_delay, g_source_remove);
   g_clear_pointer (&self->mon, sd_login_monitor_unref);
   g_clear_pointer (&self->graphical_users, g_array_unref);
   g_clear_pointer (&self->all_users, g_array_unref);
