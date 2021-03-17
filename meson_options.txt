@@ -1,2 +1,3 @@
 option('systemdsystemunitdir', type: 'string', value: '', description: 'Directory for systemd service files.')
 option('systemduserunitdir', type: 'string', value: '', description: 'Directory for systemd user service files.')
+option('cgroupify', type: 'boolean', value: 'true', description: 'Place browser processes into separate cgroups.')

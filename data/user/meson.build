@@ -14,6 +14,14 @@ meson.add_install_script(
     'uresourced.service'
 )
 
+# This renames any file/directory to change % to \.
+# This is a horrible solution, but meson insists on translating \ to / in
+# command lines so we cannot install the file into the right location.
+meson.add_install_script(
+    '../meson-unescape-dropin-dirs.sh',
+    systemd_userunitdir
+)
+
 user_drop_ins = []
 
 if not systemd_uses_recursiveprot
@@ -60,3 +68,62 @@ foreach drop_in: user_drop_ins
     )
 endforeach
 
+if get_option('cgroupify')
+    configure_file(
+        input: 'cgroupify@.service.in',
+        output: 'cgroupify@.service',
+        configuration: unit_conf,
+        install: true,
+        install_dir: systemd_userunitdir
+    )
+
+    cgroupify_appid_scope_pre = [
+        # app-gnome- is the old gnome-desktop code (which should be killed)
+        'app-gnome-',
+        # app-glib- is glib (patch is not merged upstream)
+        'app-glib-',
+        # KDE with kio
+        'app-',
+    ]
+    cgroupify_appid_service_pre = [
+        # KDE with kio
+        'app-',
+    ]
+
+    # Special characters such as '-' must be escaped.
+    # We use % instead of \ here, and the directories are moved by
+    # meson-unescape-dropin-dirs.sh!
+    cgroupify_appids = [
+        'chromium%x2dbrowser',
+        'firefox',
+        'org.gnome.Epiphany',
+        'google%x2dchrome',
+    ]
+
+    cgroupify_drop_ins = []
+
+    foreach appid: cgroupify_appids
+        foreach prefix: cgroupify_appid_scope_pre
+            cgroupify_drop_ins += [
+                ['@0@@1@-.scope'.format(prefix, appid), 'cgroupify.scope']
+            ]
+        endforeach
+
+        foreach prefix: cgroupify_appid_service_pre
+            cgroupify_drop_ins += [
+                ['@0@@1@@@.service'.format(prefix, appid), 'cgroupify.service']
+            ]
+        endforeach
+    endforeach
+
+    foreach drop_in: cgroupify_drop_ins
+        for_unit = drop_in[0]
+        origin = drop_in[1]
+
+        install_data(
+            '@0@'.format(origin),
+            rename: '99-cgroupify.conf',
+            install_dir: join_paths(systemd_userunitdir, '@0@.d'.format(for_unit))
+        )
+    endforeach
+endif

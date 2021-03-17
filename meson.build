@@ -49,3 +49,6 @@ endif
 
 subdir('data')
 subdir('src')
+if get_option('cgroupify')
+  subdir('cgroupify')
+endif

@@ -1,0 +1,8 @@
+[Unit]
+StopWhenUnneeded=yes
+CollectMode=inactive-or-failed
+
+[Service]
+Type=simple
+ExecStart=@libexecdir@/cgroupify %i
+TimeoutStopSec=5
