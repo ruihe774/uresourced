@@ -1,3 +1,15 @@
+Version 0.4.0
+-------------
+
+Changes:
+ * Add new cgroupify component. This is a separte service that is intended
+   to be used together with systemd-oomd.
+   It is *not* recommended to install it unless systemd-oomd is used. The
+   services moves every process in a unit into its own cgroup, so that
+   a systemd-oomd kill will only act on a single process.
+ * Fix a warning printed too often
+ * Fix possible crash at shutdown time
+
 Version 0.3.0
 -------------
 
