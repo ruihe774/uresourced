@@ -101,7 +101,7 @@ set_unit_resources (RManager    *self,
   if (allocation->io_weight != WEIGHT_IGNORE)
     {
       g_variant_builder_add (&builder, "(sv)", "IOWeight", g_variant_new_uint64 (allocation->io_weight));
-      io_weight = g_strdup_printf ("%d", allocation->cpu_weight);
+      io_weight = g_strdup_printf ("%d", allocation->io_weight);
     }
   else
     {
