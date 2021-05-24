@@ -14,14 +14,6 @@ meson.add_install_script(
     'uresourced.service'
 )
 
-# This renames any file/directory to change % to \.
-# This is a horrible solution, but meson insists on translating \ to / in
-# command lines so we cannot install the file into the right location.
-meson.add_install_script(
-    '../meson-unescape-dropin-dirs.sh',
-    systemd_userunitdir
-)
-
 user_drop_ins = []
 
 if not systemd_uses_recursiveprot
@@ -69,6 +61,14 @@ foreach drop_in: user_drop_ins
 endforeach
 
 if get_option('cgroupify')
+# This renames any file/directory to change % to \.
+# This is a horrible solution, but meson insists on translating \ to / in
+# command lines so we cannot install the file into the right location.
+    meson.add_install_script(
+        '../meson-unescape-dropin-dirs.sh',
+        systemd_userunitdir
+    )
+
     configure_file(
         input: 'cgroupify@.service.in',
         output: 'cgroupify@.service',
