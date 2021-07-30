@@ -4,6 +4,7 @@
 #include "uresourced-config.h"
 #include "r-manager.h"
 #include "r-app-monitor.h"
+#include "r-app-policy.h"
 
 #include <glib.h>
 #include <glib-unix.h>
@@ -65,6 +66,7 @@ main (gint   argc,
   g_autoptr(GError) error = NULL;
   g_autoptr(GMainLoop) loop = NULL;
   g_autoptr(RManager) manager = NULL;
+  g_autoptr(RAppPolicy) app_policy = NULL;
   RAppMonitor *app_monitor = NULL;
   gboolean user_mode = FALSE;
   gboolean version = FALSE;
@@ -119,6 +121,9 @@ main (gint   argc,
 
       app_monitor = r_app_monitor_get_default ();
       r_app_monitor_start (app_monitor);
+
+      app_policy = r_app_policy_new ();
+      r_app_policy_start (app_policy, app_monitor);
     }
 
   sd_notify (0, "READY=1");
@@ -126,6 +131,9 @@ main (gint   argc,
   g_main_loop_run (loop);
 
   sd_notify (0, "STOPPING=1");
+
+  if (app_policy)
+    r_app_policy_stop (app_policy);
 
   if (app_monitor)
     {

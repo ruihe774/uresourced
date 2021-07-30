@@ -11,6 +11,7 @@ uresourced_sources = [
   'r-manager.c',
   'r-sd-login.c',
   'r-app-monitor.c',
+  'r-app-policy.c',
   'utils.c',
   resources_sources
 ]
