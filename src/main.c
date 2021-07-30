@@ -5,6 +5,7 @@
 #include "r-manager.h"
 #include "r-app-monitor.h"
 #include "r-app-policy.h"
+#include "r-pw-monitor.h"
 
 #include <glib.h>
 #include <glib-unix.h>
@@ -67,6 +68,7 @@ main (gint   argc,
   g_autoptr(GMainLoop) loop = NULL;
   g_autoptr(RManager) manager = NULL;
   g_autoptr(RAppPolicy) app_policy = NULL;
+  g_autoptr(RPwMonitor) pw_monitor = NULL;
   RAppMonitor *app_monitor = NULL;
   gboolean user_mode = FALSE;
   gboolean version = FALSE;
@@ -124,6 +126,9 @@ main (gint   argc,
 
       app_policy = r_app_policy_new ();
       r_app_policy_start (app_policy, app_monitor);
+
+      pw_monitor = r_pw_monitor_new ();
+      r_pw_monitor_start (pw_monitor, app_monitor);
     }
 
   sd_notify (0, "READY=1");
@@ -131,6 +136,9 @@ main (gint   argc,
   g_main_loop_run (loop);
 
   sd_notify (0, "STOPPING=1");
+
+  if (pw_monitor)
+    r_pw_monitor_stop (pw_monitor);
 
   if (app_policy)
     r_app_policy_stop (app_policy);

@@ -12,6 +12,7 @@ uresourced_sources = [
   'r-sd-login.c',
   'r-app-monitor.c',
   'r-app-policy.c',
+  'r-pw-monitor.c',
   'utils.c',
   resources_sources
 ]
@@ -21,6 +22,7 @@ uresourced_deps = [
   dependency('gobject-2.0'),
   dependency('gio-2.0'),
   dependency('libsystemd'),
+  dependency('libpipewire-0.3'),
 ]
 
 executable('uresourced', uresourced_sources,
