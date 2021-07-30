@@ -10,6 +10,7 @@ uresourced_sources = [
   'main.c',
   'r-manager.c',
   'r-sd-login.c',
+  'r-app-monitor.c',
   'utils.c',
   resources_sources
 ]

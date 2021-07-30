@@ -3,6 +3,7 @@
 #include <systemd/sd-daemon.h>
 #include "uresourced-config.h"
 #include "r-manager.h"
+#include "r-app-monitor.h"
 
 #include <glib.h>
 #include <glib-unix.h>
@@ -64,6 +65,7 @@ main (gint   argc,
   g_autoptr(GError) error = NULL;
   g_autoptr(GMainLoop) loop = NULL;
   g_autoptr(RManager) manager = NULL;
+  RAppMonitor *app_monitor = NULL;
   gboolean user_mode = FALSE;
   gboolean version = FALSE;
   GOptionEntry main_entries[] = {
@@ -97,7 +99,7 @@ main (gint   argc,
                      G_SOURCE_FUNC (quit_mainloop),
                      loop);
 
-  /* In user session mode the daemon currently only signals to the system
+  /* In user session mode the daemon currently signals to the system
    * daemon that it is running. This resolves a race condition where the
    * cgroup of the user daemon was not yet active when the user became active
    * after login.
@@ -114,6 +116,9 @@ main (gint   argc,
     {
       /* Register an idle handler to poke the system daemon. */
       g_idle_add (idle_system_daemon_update, NULL);
+
+      app_monitor = r_app_monitor_get_default ();
+      r_app_monitor_start (app_monitor);
     }
 
   sd_notify (0, "READY=1");
@@ -121,6 +126,12 @@ main (gint   argc,
   g_main_loop_run (loop);
 
   sd_notify (0, "STOPPING=1");
+
+  if (app_monitor)
+    {
+      r_app_monitor_stop (app_monitor);
+      g_object_unref (app_monitor);
+    }
 
   if (manager)
     {
