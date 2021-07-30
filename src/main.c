@@ -137,22 +137,18 @@ main (gint   argc,
 
   sd_notify (0, "STOPPING=1");
 
-  if (pw_monitor)
-    r_pw_monitor_stop (pw_monitor);
-
-  if (app_policy)
-    r_app_policy_stop (app_policy);
-
-  if (app_monitor)
-    {
-      r_app_monitor_stop (app_monitor);
-      g_object_unref (app_monitor);
-    }
-
-  if (manager)
+  if (!user_mode)
     {
       r_manager_stop (manager);
       r_manager_flush (manager);
+    }
+  else
+    {
+      r_pw_monitor_stop (pw_monitor);
+      r_app_policy_stop (app_policy);
+      r_app_monitor_stop (app_monitor);
+
+      g_object_unref (app_monitor);
     }
 
   return EXIT_SUCCESS;
