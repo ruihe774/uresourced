@@ -13,9 +13,10 @@
 
 struct _RAppPolicy
 {
-  GObject     parent_instance;
+  GObject      parent_instance;
 
-  GDBusProxy *proxy;
+  GDBusProxy  *proxy;
+  RAppMonitor *app_monitor;
 };
 
 G_DEFINE_TYPE (RAppPolicy, r_app_policy, G_TYPE_OBJECT);
@@ -97,6 +98,8 @@ app_info_changed (gpointer *data, gpointer arg, G_GNUC_UNUSED GObject *object)
 void
 r_app_policy_start (RAppPolicy *self, RAppMonitor *monitor)
 {
+  self->app_monitor = monitor;
+
   g_signal_connect_object (monitor, "changed", G_CALLBACK (app_info_changed),
                            self, G_CONNECT_SWAPPED);
 }
@@ -104,6 +107,11 @@ r_app_policy_start (RAppPolicy *self, RAppMonitor *monitor)
 void
 r_app_policy_stop (RAppPolicy *self)
 {
+  r_app_monitor_reset_all_apps (self->app_monitor);
+
+  g_dbus_connection_flush_sync (g_dbus_proxy_get_connection (self->proxy),
+                                NULL, NULL);
+
   g_clear_object (&self->proxy);
 }
 

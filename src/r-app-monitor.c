@@ -269,6 +269,28 @@ r_app_monitor_get_app_info_from_path (RAppMonitor *app_monitor, gchar *app_path)
   return app;
 }
 
+static void
+reset_app_info (G_GNUC_UNUSED gpointer key,
+                gpointer value, gpointer data)
+{
+  RAppMonitor *self = (RAppMonitor *) data;
+  RAppInfo *app = (RAppInfo *) value;
+
+  if (app->timestamp == -1 || app->boosted != 0)
+    {
+      app->timestamp = g_get_monotonic_time ();
+      app->boosted = BOOST_NONE;
+
+      r_app_monitor_app_info_changed (self, app);
+    }
+}
+
+void
+r_app_monitor_reset_all_apps (RAppMonitor *self)
+{
+  g_hash_table_foreach (self->app_info_map, reset_app_info, self);
+}
+
 void
 destroy_app_info (gpointer data)
 {
