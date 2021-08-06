@@ -3,9 +3,12 @@
 #include <systemd/sd-daemon.h>
 #include "uresourced-config.h"
 #include "r-manager.h"
+
+#ifdef HAVE_APP_MANAGEMENT
 #include "r-app-monitor.h"
 #include "r-app-policy.h"
 #include "r-pw-monitor.h"
+#endif
 
 #include <glib.h>
 #include <glib-unix.h>
@@ -67,9 +70,11 @@ main (gint   argc,
   g_autoptr(GError) error = NULL;
   g_autoptr(GMainLoop) loop = NULL;
   g_autoptr(RManager) manager = NULL;
+#ifdef HAVE_APP_MANAGEMENT
   g_autoptr(RAppPolicy) app_policy = NULL;
   g_autoptr(RPwMonitor) pw_monitor = NULL;
   RAppMonitor *app_monitor = NULL;
+#endif
   gboolean user_mode = FALSE;
   gboolean version = FALSE;
   GOptionEntry main_entries[] = {
@@ -121,6 +126,7 @@ main (gint   argc,
       /* Register an idle handler to poke the system daemon. */
       g_idle_add (idle_system_daemon_update, NULL);
 
+#ifdef HAVE_APP_MANAGEMENT
       app_monitor = r_app_monitor_get_default ();
       r_app_monitor_start (app_monitor);
 
@@ -129,6 +135,7 @@ main (gint   argc,
 
       pw_monitor = r_pw_monitor_new ();
       r_pw_monitor_start (pw_monitor, app_monitor);
+#endif
     }
 
   sd_notify (0, "READY=1");
@@ -142,6 +149,7 @@ main (gint   argc,
       r_manager_stop (manager);
       r_manager_flush (manager);
     }
+#ifdef HAVE_APP_MANAGEMENT
   else
     {
       r_pw_monitor_stop (pw_monitor);
@@ -150,6 +158,7 @@ main (gint   argc,
 
       g_object_unref (app_monitor);
     }
+#endif
 
   return EXIT_SUCCESS;
 }

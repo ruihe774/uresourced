@@ -9,10 +9,12 @@ project('uresourced', 'c',
 prefix = get_option('prefix')
 sysconfdir = join_paths(prefix, get_option('sysconfdir'))
 datadir = join_paths(prefix, get_option('datadir'))
+have_app_management = get_option('appmanagement')
 
 config_h = configuration_data()
 config_h.set_quoted('PACKAGE_VERSION', meson.project_version())
 config_h.set_quoted('SYSCONFDIR', sysconfdir)
+config_h.set('HAVE_APP_MANAGEMENT', have_app_management)
 configure_file(
   output: 'uresourced-config.h',
   configuration: config_h,
