@@ -26,6 +26,7 @@ if have_app_management
     'r-app-monitor.c',
     'r-app-policy.c',
     'r-pw-monitor.c',
+    'r-game-monitor.c',
   ]
 
   uresourced_deps += [

@@ -8,6 +8,7 @@
 #include "r-app-monitor.h"
 #include "r-app-policy.h"
 #include "r-pw-monitor.h"
+#include "r-game-monitor.h"
 #endif
 
 #include <glib.h>
@@ -73,6 +74,7 @@ main (gint   argc,
 #ifdef HAVE_APP_MANAGEMENT
   g_autoptr(RAppPolicy) app_policy = NULL;
   g_autoptr(RPwMonitor) pw_monitor = NULL;
+  g_autoptr(RGameMonitor) game_monitor = NULL;
   RAppMonitor *app_monitor = NULL;
 #endif
   gboolean user_mode = FALSE;
@@ -135,6 +137,9 @@ main (gint   argc,
 
       pw_monitor = r_pw_monitor_new ();
       r_pw_monitor_start (pw_monitor, app_monitor);
+
+      game_monitor = r_game_monitor_new ();
+      r_game_monitor_start (game_monitor, app_monitor);
 #endif
     }
 
@@ -152,6 +157,7 @@ main (gint   argc,
 #ifdef HAVE_APP_MANAGEMENT
   else
     {
+      r_game_monitor_stop (game_monitor);
       r_pw_monitor_stop (pw_monitor);
       r_app_policy_stop (app_policy);
       r_app_monitor_stop (app_monitor);

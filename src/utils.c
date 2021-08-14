@@ -57,7 +57,7 @@ get_unit_cgroup_path_from_pid (pid_t pid)
 
   if (sd_pid_get_cgroup (pid, &contents) < 0)
     {
-      g_warning ("Could not get cgroup path for pid: %d", pid);
+      g_debug ("Could not get cgroup path for pid: %d", pid);
       return NULL;
     }
   g_strstrip (contents);
@@ -66,7 +66,7 @@ get_unit_cgroup_path_from_pid (pid_t pid)
 
   if (sd_pid_get_user_unit (pid, &unit_name) < 0)
     {
-      g_warning ("Could not get user unit name for pid: %d", pid);
+      g_debug ("Could not get user unit name for pid: %d", pid);
       return NULL;
     }
   g_strstrip (unit_name);
