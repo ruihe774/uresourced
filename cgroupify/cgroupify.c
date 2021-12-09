@@ -317,7 +317,7 @@ move_pids_from_subgroups (sd_event_source *s, uint64_t usec, void *userdata)
   (void) usec;
 
   n = scandirat (globals->cgroup_fd, ".", &namelist, NULL, NULL);
-  if (n < 0)
+  if (n <= 0)
     {
       sd_event_exit (globals->event, 0);
       return 0;
