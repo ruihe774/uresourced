@@ -222,13 +222,13 @@ move_to_subgroup (struct globals *globals, char *pid)
     {
       fprintf (stderr, "Could not add inotify watch!\n");
       free (full_path);
-      return r;
+      goto out;
     }
 
   /* And, get ready to move the process */
-  fd = open_procs (globals->cgroup_fd, pid, O_WRONLY);
+  r = fd = open_procs (globals->cgroup_fd, pid, O_WRONLY);
   if (fd < 0)
-    return fd;
+    goto out;
 
   r = write (fd, pid, strlen (pid));
   /* ESRCH is expected if the PID does not exist anymore. */
@@ -236,6 +236,7 @@ move_to_subgroup (struct globals *globals, char *pid)
     r = 0;
   close (fd);
 
+out:
   /* The cgroup should be filled at this point. However, it will not be
    * filled if the PID is gone or if it was/is a zombie.
    * So just try to delete the cgroup again, ignoring any error.
