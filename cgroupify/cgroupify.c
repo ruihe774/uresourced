@@ -226,14 +226,19 @@ move_to_subgroup (struct globals *globals, char *pid)
     }
 
   /* And, get ready to move the process */
-  r = fd = open_procs (globals->cgroup_fd, pid, O_WRONLY);
+  fd = open_procs (globals->cgroup_fd, pid, O_WRONLY);
   if (fd < 0)
-    goto out;
+    {
+      r = -errno;
+      goto out;
+    }
 
   r = write (fd, pid, strlen (pid));
   /* ESRCH is expected if the PID does not exist anymore. */
   if (r < 0 && errno == ESRCH)
     r = 0;
+  else
+    r = -errno;
   close (fd);
 
 out:
