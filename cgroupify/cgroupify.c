@@ -183,7 +183,7 @@ subgroup_inotify_cb (sd_event_source *s, const struct inotify_event *event, void
     fprintf (stderr, "Could not unlink %s, ignoring from now on: %m\n", full_path);
 
   /* We are done, disable event source and free resources. */
-  sd_event_source_set_enabled (s, SD_EVENT_OFF);
+  sd_event_source_disable_unref (s);
   free (full_path);
 
   return 0;
@@ -192,6 +192,7 @@ subgroup_inotify_cb (sd_event_source *s, const struct inotify_event *event, void
 int
 move_to_subgroup (struct globals *globals, char *pid)
 {
+  sd_event_source *inotify_source = NULL;
   char *full_path;
   char *full_events_path;
   int r;
@@ -214,7 +215,8 @@ move_to_subgroup (struct globals *globals, char *pid)
   strcat (full_events_path, pid);
   strcat (full_events_path, "/cgroup.events");
 
-  r = sd_event_add_inotify (globals->event, NULL,
+  /* This creates a non-floating event source. */
+  r = sd_event_add_inotify (globals->event, &inotify_source,
                             full_events_path, IN_MODIFY | IN_DELETE_SELF,
                             subgroup_inotify_cb, full_path);
   free (full_events_path);
