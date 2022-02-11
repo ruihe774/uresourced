@@ -412,18 +412,34 @@ read_config (RManager *self)
   self->active_user.io_weight = g_key_file_get_integer (file, "ActiveUser", "IOWeight", &error);
   check_clear_error (&error, "ActiveUser", "IOWeight");
 
-  /* Dynamic ActiveUser allocation */
-  self->session_slice.memory_min = config_get_memory (self, file, "ActiveUser", "MemoryMin", &error);
-  check_clear_error (&error, "SessionSlice", "MemoryMin");
+  /* "Fixed" SessionSlice allocation inside the user */
+  self->session_slice.memory_min = config_get_memory (self, file, "SessionSlice", "MemoryMin", &error);
+  if (error)
+    {
+      check_clear_error (&error, "SessionSlice", "MemoryMin");
+      self->session_slice.memory_min = self->active_user.memory_min;
+    }
 
-  self->session_slice.memory_low = config_get_memory (self, file, "ActiveUser", "MemoryLow", &error);
-  check_clear_error (&error, "SessionSlice", "MemoryLow");
+  self->session_slice.memory_low = config_get_memory (self, file, "SessionSlice", "MemoryLow", &error);
+  if (error)
+    {
+      check_clear_error (&error, "SessionSlice", "MemoryLow");
+      self->session_slice.memory_low = self->active_user.memory_low;
+    }
 
-  self->session_slice.cpu_weight = g_key_file_get_integer (file, "ActiveUser", "CPUWeight", &error);
-  check_clear_error (&error, "SessionSlice", "CPUWeight");
+  self->session_slice.cpu_weight = g_key_file_get_integer (file, "SessionSlice", "CPUWeight", &error);
+  if (error)
+    {
+      check_clear_error (&error, "SessionSlice", "CPUWeight");
+      self->session_slice.cpu_weight = self->active_user.cpu_weight;
+    }
 
-  self->session_slice.io_weight = g_key_file_get_integer (file, "ActiveUser", "IOWeight", &error);
-  check_clear_error (&error, "SessionSlice", "IOWeight");
+  self->session_slice.io_weight = g_key_file_get_integer (file, "SessionSlice", "IOWeight", &error);
+  if (error)
+    {
+      check_clear_error (&error, "SessionSlice", "IOWeight");
+      self->session_slice.io_weight = self->active_user.io_weight;
+    }
 }
 
 static void
