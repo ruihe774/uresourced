@@ -374,7 +374,7 @@ check_clear_error (GError **error, const char *group, const char *key)
       return;
     }
 
-  g_warning ("Could not parse key %s in group %s: %s", group, key, (*error)->message);
+  g_warning ("Could not parse key %s in group %s: %s", key, group, (*error)->message);
   g_clear_error (error);
 }
 
