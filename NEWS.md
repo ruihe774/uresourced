@@ -1,3 +1,13 @@
+Version 0.4.1
+-------------
+
+Changes:
+ * Fix uresourced logging
+ * Fix uresourced configuration file and its parsing
+ * Fix cgroupify busy looping
+ * Fix cgroupify possibly not quitting correctly
+ * Fix cgroupify error reporting
+
 Version 0.4.0
 -------------
 
