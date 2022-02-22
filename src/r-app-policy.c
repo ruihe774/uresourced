@@ -8,10 +8,6 @@
 #include "r-app-monitor.h"
 #include "r-app-policy.h"
 
-#define DEFAULT_WEIGHT 100
-#define ACTIVE_WEIGHT 300
-#define BOOST_WEIGHT 200
-
 struct _RAppPolicy
 {
   GObject      parent_instance;
