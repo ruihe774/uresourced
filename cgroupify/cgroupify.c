@@ -239,8 +239,10 @@ move_to_subgroup (struct globals *globals, char *pid)
   /* ESRCH is expected if the PID does not exist anymore. */
   if (r < 0 && errno == ESRCH)
     r = 0;
-  else
+  else if (r < 0)
     r = -errno;
+  else
+    r = 0;
   close (fd);
 
 out:
