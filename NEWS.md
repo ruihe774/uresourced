@@ -1,3 +1,9 @@
+Version 0.5.0
+-------------
+
+Changes:
+ * Add support to dynamically boost application
+
 Version 0.4.1
 -------------
 
