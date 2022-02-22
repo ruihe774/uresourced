@@ -216,6 +216,12 @@ r_app_monitor_get_app_info_from_path (RAppMonitor *app_monitor, gchar *app_path)
       return NULL;
     }
 
+  if (!g_str_has_prefix (app_path, app_monitor->app_slice_path))
+    {
+      g_debug ("Can't get app info. app cgroup not under app.slice, outside managed area.");
+      return NULL;
+    }
+
   if (g_hash_table_contains (app_monitor->app_info_map, app_path))
     {
       app = (RAppInfo *) g_hash_table_lookup (app_monitor->app_info_map, app_path);
