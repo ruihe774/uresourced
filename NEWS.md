@@ -1,3 +1,10 @@
+Version 0.5.1
+-------------
+
+Changes:
+ * Fix incorrect error return when moving processes
+ * Ignore non app.slice sub-cgroups in app manager
+
 Version 0.5.0
 -------------
 
