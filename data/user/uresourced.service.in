@@ -1,5 +1,6 @@
 [Unit]
 Description=User resource assignment daemon
+Requires=app.slice
 
 Before=graphical-session.target
 PartOf=graphical-session.target
