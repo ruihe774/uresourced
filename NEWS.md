@@ -1,3 +1,9 @@
+Version 0.5.2
+-------------
+
+Changes:
+ * Fix app management startup in user daemon
+
 Version 0.5.1
 -------------
 
