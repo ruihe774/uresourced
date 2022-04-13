@@ -4,6 +4,8 @@ Requires=app.slice
 After=pipewire.socket
 Wants=pipewire.socket
 
+After=app.slice
+
 Before=graphical-session.target
 PartOf=graphical-session.target
 
