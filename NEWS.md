@@ -1,3 +1,11 @@
+Version 0.5.3
+-------------
+
+Changes:
+ * Proper fix for app management startup in user daemon
+ * Fix use-after-free after an unknown pipewire event
+ * Remove hard dependency on pipewire
+
 Version 0.5.2
 -------------
 
