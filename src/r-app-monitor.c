@@ -297,7 +297,7 @@ r_app_monitor_reset_all_apps (RAppMonitor *self)
   g_hash_table_foreach (self->app_info_map, reset_app_info, self);
 }
 
-void
+static void
 destroy_app_info (gpointer data)
 {
   RAppInfo *app = (RAppInfo *) data;

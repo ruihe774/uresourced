@@ -35,7 +35,6 @@ void r_app_monitor_stop (RAppMonitor *self);
 RAppInfo *r_app_monitor_get_app_info_from_path (RAppMonitor *app_monitor,
                                                 gchar       *app_path);
 void r_app_monitor_reset_all_apps (RAppMonitor *self);
-void destroy_app_info (gpointer data);
 
 void r_app_monitor_app_info_changed (RAppMonitor *self,
                                      RAppInfo    *info);

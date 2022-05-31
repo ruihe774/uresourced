@@ -133,10 +133,6 @@ node_event_info (void *object, const struct pw_node_info *info)
       app->boosted &= ~BOOST_AUDIO;
       r_app_monitor_app_info_changed (data->app_monitor, app);
     }
-  else
-    {
-      destroy_app_info ((void *) app);
-    }
 }
 
 static const struct pw_node_events node_events
