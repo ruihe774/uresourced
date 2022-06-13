@@ -1,6 +1,8 @@
 [Unit]
 Description=User resource assignment daemon
 Requires=app.slice
+After=pipewire.socket
+Wants=pipewire.socket
 
 Before=graphical-session.target
 PartOf=graphical-session.target

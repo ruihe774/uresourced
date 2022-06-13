@@ -60,11 +60,15 @@ r_pw_monitor_finalize (GObject *object)
 {
   RPwMonitor *self = (RPwMonitor *) object;
 
-  pw_proxy_destroy ((struct pw_proxy *) self->pipewire_registry);
+  if (self->pipewire_registry)
+    pw_proxy_destroy ((struct pw_proxy *) self->pipewire_registry);
   g_clear_pointer (&self->pipewire_core, pw_core_disconnect);
   g_clear_pointer (&self->pipewire_context, pw_context_destroy);
-  g_source_destroy (&self->pipewire_source->base);
-  g_source_unref (&self->pipewire_source->base);
+  if (self->pipewire_source)
+    {
+      g_source_destroy (&self->pipewire_source->base);
+      g_source_unref (&self->pipewire_source->base);
+    }
   pw_deinit ();
 
   G_OBJECT_CLASS (r_pw_monitor_parent_class)->finalize (object);
@@ -267,6 +271,9 @@ create_pipewire_source ()
 void
 r_pw_monitor_start (RPwMonitor *self, RAppMonitor *monitor)
 {
+  if (!self->pipewire_source || !self->pipewire_context || !self->pipewire_core)
+    return;
+
   self->app_monitor = monitor;
 
   g_source_attach (&self->pipewire_source->base, NULL);
@@ -275,6 +282,9 @@ r_pw_monitor_start (RPwMonitor *self, RAppMonitor *monitor)
 void
 r_pw_monitor_stop (RPwMonitor *self)
 {
+  if (!self->pipewire_source || !self->pipewire_context || !self->pipewire_core)
+    return;
+
   g_source_destroy (&self->pipewire_source->base);
 }
 
@@ -293,18 +303,27 @@ r_pw_monitor_init (RPwMonitor *self)
 
   self->pipewire_source = create_pipewire_source ();
   if (!self->pipewire_source)
-    g_error ("Failed to create PipeWire source");
+    {
+      g_message ("Failed to create PipeWire source");
+      return;
+    }
 
   self->pipewire_context
     = pw_context_new (self->pipewire_source->pipewire_loop, NULL, 0);
   if (!self->pipewire_context)
-    g_error ("Failed to create PipeWire context");
+    {
+      g_message ("Failed to create PipeWire context");
+      return;
+    }
 
   self->pipewire_core = pw_context_connect (
     self->pipewire_context,
     pw_properties_new (PW_KEY_REMOTE_NAME, NULL, NULL), 0);
   if (!self->pipewire_core)
-    g_error ("Can't connect to PipeWire context");
+    {
+      g_message ("Can't connect to PipeWire context");
+      return;
+    }
 
   self->pipewire_registry
     = pw_core_get_registry (self->pipewire_core, PW_VERSION_REGISTRY, 0);
