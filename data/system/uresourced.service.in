@@ -1,5 +1,6 @@
 [Unit]
 Description=User resource assignment daemon
+ConditionControlGroupController=v2
 
 [Service]
 Type=dbus
