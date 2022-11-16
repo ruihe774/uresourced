@@ -20,5 +20,4 @@ ExecStart=@libexecdir@/uresourced --user
 TimeoutStopSec=5s
 
 
-ProtectSystem=strict
 RestrictAddressFamilies=AF_UNIX
