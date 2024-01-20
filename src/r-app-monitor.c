@@ -362,6 +362,8 @@ handle_inotify_event (RAppMonitor *self, struct inotify_event *i)
       g_hash_table_remove (self->path_to_wd_map, app_path);
       g_hash_table_remove (self->wd_to_path_map, wd_temp);
       g_hash_table_remove (self->app_info_map, app_path);
+
+      inotify_rm_watch (self->inotify_fd, GPOINTER_TO_INT (wd_temp));
     }
 }
 
