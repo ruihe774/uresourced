@@ -70,12 +70,22 @@ r_app_monitor_finalize (GObject *object)
 gboolean
 inotify_add_cgroup_dir (RAppMonitor *self, gchar *path)
 {
+  gpointer old_path;
+  gpointer old_wd;
   gint wd;
 
   wd = inotify_add_watch (self->inotify_fd, path,
                           IN_ATTRIB | IN_CREATE | IN_DELETE);
   if (wd == -1)
     return FALSE;
+
+  if (g_hash_table_steal_extended(self->path_to_wd_map, path, &old_path, &old_wd))
+    {
+      g_free (old_path);
+      g_hash_table_remove (self->wd_to_path_map, old_wd);
+
+      inotify_rm_watch (self->inotify_fd, GPOINTER_TO_INT (old_wd));
+    }
 
   g_hash_table_replace (self->path_to_wd_map, g_strdup (path),
                         GINT_TO_POINTER (wd));
