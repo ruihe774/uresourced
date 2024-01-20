@@ -64,6 +64,9 @@ r_app_monitor_finalize (GObject *object)
   g_clear_pointer (&self->wd_to_path_map, g_hash_table_destroy);
   g_clear_pointer (&self->app_info_map, g_hash_table_destroy);
 
+  if (self->inotify_fd >= 0)
+    close (self->inotify_fd);
+
   G_OBJECT_CLASS (r_app_monitor_parent_class)->finalize (object);
 }
 
