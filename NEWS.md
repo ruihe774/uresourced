@@ -1,3 +1,11 @@
+Version 0.5.4
+-------------
+
+Changes:
+ * Only run uresourced and cgroupify on cgroup v2
+ * Fix inotify leak in uresourced application manager
+ * Fix inotify leak in cgroupify
+
 Version 0.5.3
 -------------
 
