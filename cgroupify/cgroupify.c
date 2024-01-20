@@ -195,7 +195,7 @@ move_to_subgroup (struct globals *globals, char *pid)
   sd_event_source *inotify_source = NULL;
   char *full_path;
   char *full_events_path;
-  int r;
+  int r, res;
   int fd;
 
   /* The directory should not yet exist */
@@ -217,7 +217,7 @@ move_to_subgroup (struct globals *globals, char *pid)
 
   /* This creates a non-floating event source. */
   r = sd_event_add_inotify (globals->event, &inotify_source,
-                            full_events_path, IN_MODIFY | IN_DELETE_SELF,
+                            full_events_path, IN_MODIFY,
                             subgroup_inotify_cb, full_path);
   free (full_events_path);
   if (r < 0)
@@ -248,9 +248,14 @@ move_to_subgroup (struct globals *globals, char *pid)
 out:
   /* The cgroup should be filled at this point. However, it will not be
    * filled if the PID is gone or if it was/is a zombie.
-   * So just try to delete the cgroup again, ignoring any error.
+   * So just try to delete the cgroup again. If that succeeds (or the cgroup is
+   * already gone for some reason), then the cgroup contains no processes. If
+   * that happens then we are not going to get an inotify event, so remove it
+   * explicitly.
    */
-  unlinkat (globals->cgroup_fd, pid, AT_REMOVEDIR);
+  res = unlinkat (globals->cgroup_fd, pid, AT_REMOVEDIR);
+  if (res == 0 || (res < 0 && errno == ENOENT))
+    sd_event_source_disable_unref (inotify_source);
 
   return r;
 }
