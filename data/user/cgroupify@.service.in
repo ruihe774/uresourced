@@ -1,6 +1,7 @@
 [Unit]
 StopWhenUnneeded=yes
 CollectMode=inactive-or-failed
+ConditionControlGroupController=v2
 
 [Service]
 Type=simple
