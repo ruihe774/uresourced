@@ -84,7 +84,7 @@ set_unit_resources (RManager    *self,
   g_autofree char *io_weight = NULL;
 
   g_variant_builder_add (&builder, "s", unit);
-  g_variant_builder_add (&builder, "b", FALSE);
+  g_variant_builder_add (&builder, "b", TRUE);
   g_variant_builder_open (&builder, G_VARIANT_TYPE ("a(sv)"));
 
   g_variant_builder_add (&builder, "(sv)", "MemoryMin", g_variant_new_uint64 (allocation->memory_min));
